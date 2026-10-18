@@ -10,12 +10,13 @@ from typing import Any, Dict, List, Optional, Tuple
 from .config_parser.models import ProxyConfig
 from .security import redact_credentials
 
-DEFAULT_CONFIG_DIR = Path.home() / ".config" / "xray-config-bench"
+from .paths import get_app_config_dir, get_db_path
+
+DEFAULT_CONFIG_DIR = get_app_config_dir()
 
 
 def get_default_db_path() -> Path:
-    DEFAULT_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    return DEFAULT_CONFIG_DIR / "xray_bench.db"
+    return get_db_path()
 
 
 class Database:

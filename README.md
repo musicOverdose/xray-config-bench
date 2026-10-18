@@ -1,124 +1,108 @@
 # Xray Config Bench
 
-A modern, high-performance desktop application for discovering, testing, speed benchmarking, and ranking V2Ray/Xray configurations. Built with **Python 3** and **PySide6 (Qt for Python)**, designed natively for Linux desktop environments (Debian, Ubuntu, KDE Plasma, GNOME).
+A modern, cross-platform graphical desktop application for discovering, testing, speed benchmarking, and ranking V2Ray/Xray configurations. Built with **Python 3** and **PySide6 (Qt for Python)**, supporting both **Windows 10/11** and **Linux** (Debian, Ubuntu, KDE Plasma, GNOME).
+
+[![CI & Cross-Platform Builds](https://github.com/musicOverdose/xray-config-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/musicOverdose/xray-config-bench/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://www.python.org/)
 
 ---
 
-## Features
+## Key Features
 
-- **Multi-Source Configuration Discovery**:
-  - Direct subscription URLs (plain text or Base64-encoded).
-  - GitHub repositories: traverses git trees via GitHub API, downloads eligible text files recursively across nested directories, with automatic rate-limit and pagination handling.
-  - Raw GitHub file URLs and arbitrary HTTP/HTTPS proxy feeds.
-  - Local text files with real-time file browser integration.
-- **Extensible Protocol Parsers**:
-  - Full support for `vless://`, `vmess://`, `trojan://`, and `ss://` (Shadowsocks SIP002 & legacy).
-  - Retains all security-critical transport options: TLS, SNI, ALPN, Reality public keys (`pbk`), short IDs (`sid`), spiderX (`spx`), uTLS fingerprints (`fp`), WebSocket paths/hosts, and gRPC services/modes.
-- **Isolated Real-World Xray Testing Backend**:
-  - Real end-to-end HTTP/HTTPS probes through genuine isolated Xray Core processes.
-  - Each candidate runs with a dedicated local SOCKS5 inbound bound exclusively to `127.0.0.1` on unique ephemeral ports.
-  - Dynamic port allocation and guaranteed child process & temporary file cleanup.
-  - Automatically identifies failure categories: *TLS handshake failure*, *Connection timeout*, *DNS resolution failure*, *Remote server unreachable*, *Authentication or protocol error*, and *Backend startup failure*.
-- **Multi-Stage Benchmarking Pipeline**:
-  - **Latency**: End-to-end response time measurement over multiple attempts with median latency and variance calculation.
-  - **Download Speed**: Bounded streaming throughput measurement (Mbps) over HTTPS (default 2 MB, hard limit 10 MB). Can be restricted to top candidates or toggled off for latency-only scans.
-  - **Stability**: Measures candidate reliability and packet success rates across repeated probes.
+- **Cross-Platform by Architecture**:
+  - Full compatibility with **Windows 10/11** and **Linux** (x86_64 and ARM64).
+  - Uses `platformdirs` for OS-compliant configuration and cache directories (`%APPDATA%` on Windows, `~/.config/` on Linux).
+  - Process isolation with Windows `CREATE_NO_WINDOW` support and reliable file unlocking.
+- **Dynamic Configuration Source Discovery**:
+  - **Direct subscription URLs**: Automatically detects and decodes plain-text or Base64-encoded subscription responses.
+  - **GitHub repository URLs**: Discovers text configuration feeds across nested directory trees using the GitHub REST API, filtering out binaries with pagination and rate-limit backoff.
+  - **Raw GitHub URLs & HTTP/HTTPS text feeds**: Directly streams and extracts candidate proxies.
+  - **Local text files**: File browser integration for offline or locally saved configuration lists.
+  - Full GUI management: add, edit, remove, enable/disable, and refresh sources individually or all at once.
+- **Supported Protocols & Security Preserved**:
+  - `vless://`, `vmess://`, `trojan://`, and `ss://` (Shadowsocks SIP002 & legacy).
+  - Preserves transport and security parameters: TLS, SNI, ALPN, Reality public keys (`pbk`), short IDs (`sid`), spiderX (`spx`), uTLS fingerprints (`fp`), WebSocket paths/hosts, gRPC service names, and XTLS flow control (`xtls-rprx-vision`).
+  - SHA-256 deduplication eliminates redundant testing of identical nodes across different feeds.
+- **Isolated Testing Backend**:
+  - Automatically identifies local Xray Core executables (`xray.exe` on Windows, `xray` on Linux).
+  - Built-in OS-aware downloader automatically fetches and verifies the correct release asset (`Xray-windows-64.zip`, `Xray-linux-64.zip`, `Xray-windows-arm64-v8a.zip`, etc.) from official XTLS/Xray-core releases.
+  - Spawns isolated Xray child processes with dynamic ephemeral ports bound strictly to `127.0.0.1`.
+- **Multi-Stage Real-World Benchmarking**:
+  - **Connectivity validation**: End-to-end HTTP/HTTPS probes.
+  - **Error classification**: Categorizes failures (*TLS handshake failure*, *Connection timeout*, *DNS resolution failure*, *Remote server unreachable*, *Authentication or protocol error*, and *Backend startup failure*).
+  - **Latency measurement**: Median response time and jitter/variance over multiple attempts.
+  - **Download throughput**: Real streaming speed measurement in Mbps (bounded to 2 MB by default, max 10 MB) to prevent bandwidth saturation.
+  - **Stability score**: Measures packet delivery and success rate over repeated attempts.
 - **Fair Composite Ranking**:
-  - Normalized multi-factor scoring formula balancing connectivity (35%), latency (30%), download speed (25%), and stability (10%).
-  - Configurable scoring weights and penalty rules (failed nodes always score 0).
-- **Security & Privacy First**:
-  - Original share links and benchmark history stay strictly local in `~/.config/xray-config-bench/xray_bench.db`.
-  - Automatic credential redaction: UUIDs, passwords, and tokens are masked before logging or displaying in UI tables.
-  - Zero telemetry and no external analytics.
-- **Desktop Usability & Exports**:
-  - Native dark theme optimized for readability and dark desktop themes.
-  - Export top N configurations, all working configurations, or copy sanitized summaries without credentials.
+  - Normalized multi-factor score (0 - 100) balancing connectivity, latency, throughput, and stability.
+  - Configurable weights and penalty rules (failed nodes score 0).
+- **Local Storage & Zero Telemetry**:
+  - All configurations, results, and settings persist locally in SQLite (`xray_bench.db`).
+  - Automatic credential redaction: UUIDs, passwords, and tokens are scrubbed from diagnostic logs and UI tables.
 
 ---
 
-## Interface Overview
+## Installation & Launch
 
-<!-- Screenshots Section -->
+### Windows 10 / 11
+
+#### Prerequisites
+Install **Python 3.10 or newer** from the [official website](https://www.python.org/downloads/windows/).
+> [!IMPORTANT]
+> During installation, check the box: **"Add Python to PATH"**.
+
+#### Option A: Using PowerShell (Recommended)
+Open PowerShell, navigate to the folder, and run:
+```powershell
+git clone https://github.com/musicOverdose/xray-config-bench.git
+cd xray-config-bench
+.\launch.ps1
 ```
-+-------------------------------------------------------------------------------------------------+
-|  Xray Config Bench                               [Fetch Sources] [Start Benchmark] [Cancel Scan]|
-+-------------------------------------------------------------------------------------------------+
-| [ Dashboard ] [ Sources ] [ Results ] [ Settings ] [ Logs ]                                     |
-|                                                                                                 |
-|   +---------------+  +---------------+  +---------------+  +---------------+  +---------------+ |
-|   |  DISCOVERED   |  |    TESTED     |  |    WORKING    |  |    FAILED     |  |    PENDING    | |
-|   |      142      |  |      85       |  |      47       |  |      38       |  |      57       | |
-|   +---------------+  +---------------+  +---------------+  +---------------+  +---------------+ |
-|                                                                                                 |
-|   Active Scan Progress: [===================================>--------] 65% (47 working)        |
-|                                                                                                 |
-|   Top-Performing Configuration:                                                                 |
-|   +-----------------------------------------------------------------------------------------+   |
-|   | [VLESS] Fast-US-Node-Reality                                                 SCORE: 96  |   |
-|   | Server: 104.21.42.1:443  |  Latency: 68.2 ms  |  Speed: 18.4 Mbps                       |   |
-|   +-----------------------------------------------------------------------------------------+   |
-+-------------------------------------------------------------------------------------------------+
+*If script execution is restricted on your system, enable it for the current process:*
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\launch.ps1
 ```
-*(Screenshot placeholder: Rendered above using ASCII wireframe. The GUI runs natively using PySide6.)*
+
+#### Option B: Using Command Prompt / Batch
+Double-click `launch.bat` or run:
+```cmd
+launch.bat
+```
+The script will automatically create a `.venv`, install requirements, and start the GUI.
+
+#### Option C: Building a Standalone Windows Executable
+You can package a single standalone `.exe` using PyInstaller:
+```powershell
+pip install -r requirements.txt
+pip install pyinstaller
+pyinstaller xray-config-bench.spec
+```
+The resulting executable will be in `dist\xray-config-bench.exe`.
+
+> [!NOTE]
+> **Windows Defender & SmartScreen Notice**: Unsigned executables built from source or downloaded from GitHub Actions may trigger Windows SmartScreen ("Windows protected your PC"). Click **"More info"** and then **"Run anyway"**.
 
 ---
 
-## Installation & Setup
+### Linux (Debian 13 Trixie, Ubuntu 22.04+, Arch, Fedora)
 
-### 1. System Requirements
-
-- **Operating System**: Debian 13 (Trixie), Debian 12 (Bookworm), Ubuntu 22.04+, or any modern Linux distribution.
-- **Desktop**: KDE Plasma, GNOME, XFCE, or any desktop session.
-- **Python**: Python 3.10 or newer (tested on Python 3.13).
-
-### 2. Debian / Ubuntu System Dependencies
-
-Install Python 3, venv, and Git:
-
+#### System Dependencies
 ```bash
 sudo apt update
 sudo apt install -y python3 python3-venv python3-pip git curl
 ```
 
-### 3. Clone and Setup Environment
-
+#### Launching with `launch.sh`
 ```bash
 git clone https://github.com/musicOverdose/xray-config-bench.git
 cd xray-config-bench
-```
-
-Create and activate a virtual environment:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
----
-
-## Launching the Application
-
-You can launch the application in several ways:
-
-### Option A: Using the Launch Script (Recommended)
-
-```bash
 ./launch.sh
 ```
 
-### Option B: Running with Python Directly
-
-```bash
-source .venv/bin/activate
-python3 main.py
-```
-
-### Option C: Desktop Launcher
-
-Install the `.desktop` launcher into your local user applications directory:
-
+#### Desktop Launcher
+To integrate with your desktop menu (KDE Plasma, GNOME, etc.):
 ```bash
 cp xray-config-bench.desktop ~/.local/share/applications/
 update-desktop-database ~/.local/share/applications/
@@ -126,109 +110,70 @@ update-desktop-database ~/.local/share/applications/
 
 ---
 
-## Xray Core Backend
+## Operating System Paths
 
-Xray Config Bench requires the **Xray Core** binary to run candidate proxies in an isolated sandbox.
-
-### Managed Automatic Download
-
-1. Open the application.
-2. Go to the **Settings** tab.
-3. Click **"Download Official Xray"**.
-4. The application will securely download the latest official release (`Xray-linux-64.zip`) from [XTLS/Xray-core](https://github.com/XTLS/Xray-core), verify its checksum, extract the binary into `~/.config/xray-config-bench/bin/xray`, and set executable permissions.
-
-### Using an Existing Installation
-
-If you already have Xray installed (e.g. via package manager in `/usr/local/bin/xray` or `~/.local/bin/xray`), click **"Auto-Detect"** or enter its absolute path in Settings.
+| Platform | Configuration & SQLite Database | Managed Binaries & Temp Configs |
+| :--- | :--- | :--- |
+| **Windows** | `%APPDATA%\xray-config-bench\` | `%LOCALAPPDATA%\xray-config-bench\` |
+| **Linux** | `~/.config/xray-config-bench/` | `~/.config/xray-config-bench/` or `~/.local/share/` |
 
 ---
 
-## Usage Guide
+## Managing Configuration Sources
 
-### 1. Adding Sources
+You can add and manage multiple configuration feeds directly from the GUI without writing code:
 
-Navigate to the **Sources** tab and click **"+ Add Source"**:
-
-- **Subscription URL**: Enter any public subscription feed (plain-text or Base64).
-- **GitHub Repository**: Enter a repository URL such as `https://github.com/freefq/free`. The application uses the GitHub API to discover files like `.txt`, `.sub`, and `.yaml`, downloading candidate files safely without touching binaries.
-- **Raw GitHub File**: Direct link to a raw file, e.g. `https://raw.githubusercontent.com/.../nodes.txt`.
-- **Local File**: Click "Browse..." to select a local text file containing configuration links.
-
-Click **"Refresh Selected"** or **"Refresh All Enabled"** to parse and import configurations into your local database. Duplicates across multiple feeds are automatically deduplicated.
-
-### 2. Running a Benchmark Scan
-
-From the top toolbar or Dashboard:
-
-1. Choose whether to **"Test Untested Only"** or retest existing nodes.
-2. Choose whether to **"Enable Speed Test"** (uncheck for fast, latency-only scans).
-3. Click **"Start Benchmark"**.
-4. Watch real-time progress on the Dashboard, detailed metrics in Results, and sanitized events in Logs.
-5. Click **"Cancel Scan"** at any time to halt testing immediately.
-
-### 3. Understanding Metrics & Ranking
-
-Configurations are evaluated through a real SOCKS5 socket to test actual internet connectivity:
-
-- **Latency (ms)**: End-to-end response time for HTTP/HTTPS requests through the proxy.
-- **Speed (Mbps)**: Real download throughput measured by streaming a bounded block of data (default 2 MB) through the proxy.
-- **Success Rate (%)**: Reliability percentage over repeated probe attempts.
-- **Variance (ms)**: Latency jitter between attempts. Lower jitter indicates a more stable connection.
-- **Composite Score (0 - 100)**: Multi-factor score combining all measurements using normalized weights:
-  $$\text{Score} = w_{\text{conn}} \cdot S_{\text{conn}} + w_{\text{lat}} \cdot S_{\text{lat}} + w_{\text{spd}} \cdot S_{\text{spd}} + w_{\text{stab}} \cdot S_{\text{stab}}$$
-
-### 4. Exporting Configurations
-
-In the **Results** tab:
-
-- **Copy Share Link**: Copies the raw share link of the selected row.
-- **Copy Safe Summary**: Copies a human-readable summary without leaking passwords or UUIDs.
-- **Export Selected**: Saves selected configurations to a `.txt` file or copies them to clipboard.
-- **Export All Working**: Exports all configurations that passed connectivity tests.
-- **Export Top N**: Exports the top *N* highest-ranked configurations.
+1. Click on the **Sources** tab.
+2. Click **"+ Add Source"**.
+3. Choose the source type:
+   - **Subscription URL**: Enter any public subscription feed (plain-text or Base64).
+   - **GitHub Repository**: Enter a repository URL (e.g. `https://github.com/freefq/free` or `https://github.com/owner/repo/tree/branch/subfolder`). The application inspects the repository's tree via the GitHub API, retrieves eligible text files, and parses proxy links across nested subdirectories.
+   - **Raw GitHub File**: Direct link to a raw file (e.g. `https://raw.githubusercontent.com/.../nodes.txt`).
+   - **Local File**: Click "Browse..." to select any text file on your local machine.
+4. Enter an optional display name and click **OK**.
+5. Click **"Refresh Selected"** or **"Refresh All Enabled"**. Discovered configurations are automatically validated, deduplicated, and displayed in the Results tab.
 
 ---
 
-## Supported Protocols
+## Benchmarking & Ranking Workflow
 
-| Protocol | Transport Networks | Security | Key Parameters Supported |
-| :--- | :--- | :--- | :--- |
-| **VLESS** | TCP, WebSocket, gRPC, HTTP | None, TLS, Reality | `pbk`, `sid`, `spx`, `fp`, `sni`, `flow` (`xtls-rprx-vision`), `alpn`, `path`, `host`, `serviceName` |
-| **VMess** | TCP, WebSocket, gRPC, HTTP | None, TLS | Base64 JSON & URI formats, `alterId`, `cipher`, `path`, `host`, `sni`, `fp` |
-| **Trojan** | TCP, WebSocket, gRPC | TLS | `sni`, `alpn`, `fp`, `path`, `host`, `serviceName` |
-| **Shadowsocks** | TCP | Stream / AEAD | SIP002 & legacy formats, `aes-128-gcm`, `aes-256-gcm`, `chacha20-ietf-poly1305` |
-
-> [!NOTE]
-> *Hysteria2* and *TUIC* require the sing-box core backend and are not natively supported by standard Xray Core. They are planned for a future update with a modular backend driver.
-
----
-
-## Security & Privacy Considerations
-
-- **Local Storage Only**: Configurations, links, and benchmarks are saved exclusively in your user directory (`~/.config/xray-config-bench/`).
-- **Local Inbound Isolation**: Temporary test SOCKS5 inbounds listen strictly on `127.0.0.1` and are never exposed to your local network or public interfaces.
-- **Safe Sandboxing**: Source files are parsed only as text feeds. No downloaded shell scripts or arbitrary code are ever executed.
-- **Automatic Redaction**: UUIDs, passwords, and tokens are scrubbed from diagnostic logs and UI views.
+1. In the top toolbar, toggle:
+   - **"Test Untested Only"** (recommended for quick incremental updates) or uncheck to retest all candidates.
+   - **"Enable Speed Test"** (uncheck for fast latency-only scans).
+2. Click **"Start Benchmark"**.
+3. The application runs tests with configurable concurrency (default: 3 parallel workers).
+4. Results appear in real-time in the **Results** table with:
+   - Protocol badge
+   - Connection status (Working / Failed)
+   - Median latency (ms) and latency variance/jitter (ms)
+   - Download speed (Mbps)
+   - Reliability / success rate (%)
+   - Composite ranking score (0 - 100)
+5. **Exporting**:
+   - Select rows and click **"Export Selected"**.
+   - Click **"Export All Working"** or **"Export Top N..."** to save winners to a text file or copy directly to your clipboard.
 
 ---
 
-## Running the Automated Test Suite
+## Automated Tests
 
-Run pytest inside the virtual environment:
+Run the test suite across both platforms:
 
 ```bash
-source .venv/bin/activate
+source .venv/bin/activate  # Linux
+# or .venv\Scripts\activate on Windows
+
 QT_QPA_PLATFORM=offscreen pytest -v
 ```
 
-All 39 unit and GUI integration tests mock network requests and child processes to verify:
-- Parsing and parameter retention across all supported protocols.
-- Base64 padding and corruption tolerance.
-- Duplicate detection and database transactions.
-- Credential redaction in logs and share links.
-- Isolated process lifecycle and dynamic port assignment.
-- Metric normalization and ranking scores.
-- PySide6 GUI window and tab initialization.
+The test suite covers:
+- Protocol parsers (`vless`, `vmess`, `trojan`, `shadowsocks`, edge cases, Base64 padding).
+- OS-aware asset discovery and binary naming (`xray.exe` on Windows, `xray` on Linux).
+- Cross-platform paths and temporary directory handling (`platformdirs`).
+- Ephemeral port reservation and subprocess creation flags (`CREATE_NO_WINDOW`).
+- Mocked GitHub tree crawling and rate-limit backoff.
+- Credential scrubbing and privacy enforcement.
+- PySide6 GUI window and widget initialization.
 
 ---
 

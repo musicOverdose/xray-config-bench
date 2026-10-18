@@ -1,19 +1,18 @@
-"""Isolated Xray child process runner with ephemeral port assignment and guaranteed cleanup."""
+"""Isolated Xray child process runner with ephemeral port assignment and guaranteed cross-platform cleanup."""
 
 import json
 import os
 from pathlib import Path
 import socket
 import subprocess
+import sys
 import time
 from typing import Optional
 
 from .config_generator import generate_test_xray_config
 from .config_parser.models import ProxyConfig
-from .database import DEFAULT_CONFIG_DIR
+from .paths import get_tmp_dir
 from .security import redact_credentials
-
-TEMP_CONFIG_DIR = DEFAULT_CONFIG_DIR / "tmp"
 
 
 def allocate_free_port() -> int:
@@ -49,13 +48,18 @@ class ProxyRunner:
 
     def __enter__(self) -> int:
         self.port = allocate_free_port()
-        TEMP_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        self.temp_file = TEMP_CONFIG_DIR / f"bench_{self.port}_{self.config.unique_hash[:8]}.json"
+        tmp_dir = get_tmp_dir()
+        self.temp_file = tmp_dir / f"bench_{self.port}_{self.config.unique_hash[:8]}.json"
 
         # Generate config
         conf_dict = generate_test_xray_config(self.config, self.port)
         with open(self.temp_file, "w", encoding="utf-8") as f:
             json.dump(conf_dict, f, indent=2)
+
+        # Cross-platform subprocess flags (suppress console pop-up on Windows)
+        extra_kwargs = {}
+        if sys.platform == "win32":
+            extra_kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
         # Launch Xray process
         try:
@@ -64,6 +68,7 @@ class ProxyRunner:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                **extra_kwargs,
             )
         except Exception as exc:
             self._cleanup()
@@ -100,13 +105,18 @@ class ProxyRunner:
                         self.process.wait(timeout=1.0)
                     except subprocess.TimeoutExpired:
                         self.process.kill()
+                        self.process.wait(timeout=0.5)
             except Exception:
                 pass
             self.process = None
 
-        if self.temp_file and self.temp_file.is_file():
-            try:
-                self.temp_file.unlink(missing_ok=True)
-            except Exception:
-                pass
+        if self.temp_file:
+            # On Windows, file locks may take a few moments to release
+            for _ in range(5):
+                try:
+                    if self.temp_file.is_file():
+                        self.temp_file.unlink(missing_ok=True)
+                    break
+                except (PermissionError, OSError):
+                    time.sleep(0.1)
             self.temp_file = None

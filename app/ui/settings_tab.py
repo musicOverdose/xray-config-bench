@@ -25,6 +25,8 @@ from ..database import Database
 from ..ranking import ScoringWeights
 
 
+import sys
+
 class SettingsTab(QWidget):
     """Configuration view for backend paths, network targets, concurrency, and scoring."""
 
@@ -48,7 +50,12 @@ class SettingsTab(QWidget):
 
         path_layout = QHBoxLayout()
         self.xray_path_input = QLineEdit()
-        self.xray_path_input.setPlaceholderText("/usr/local/bin/xray or ~/.config/xray-config-bench/bin/xray")
+        placeholder = (
+            "C:\\path\\to\\xray.exe or %LOCALAPPDATA%\\xray-config-bench\\bin\\xray.exe"
+            if sys.platform == "win32"
+            else "/usr/local/bin/xray or ~/.config/xray-config-bench/bin/xray"
+        )
+        self.xray_path_input.setPlaceholderText(placeholder)
         path_layout.addWidget(self.xray_path_input)
 
         browse_btn = QPushButton("Browse...")
@@ -242,7 +249,8 @@ class SettingsTab(QWidget):
         self.weight_stab_spin.setValue(0.10)
 
     def _browse_xray(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Select Xray Core Binary", "", "Executable (*)")
+        filt = "Executable (*.exe);;All Files (*.*)" if sys.platform == "win32" else "Executable (*);;All Files (*)"
+        path, _ = QFileDialog.getOpenFileName(self, "Select Xray Core Binary", "", filt)
         if path:
             self.xray_path_input.setText(path)
             self._check_xray_version(path)

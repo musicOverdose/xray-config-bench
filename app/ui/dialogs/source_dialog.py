@@ -1,6 +1,7 @@
 """Dialog for adding or editing a proxy configuration source."""
 
 import os
+import sys
 from typing import Any, Dict, Optional
 import uuid
 from PySide6.QtWidgets import (
@@ -97,16 +98,22 @@ class SourceDialog(QDialog):
         is_local = (index == 4)
         self.browse_btn.setVisible(is_local)
         if is_local:
-            self.path_input.setPlaceholderText("/home/user/my_configs.txt")
+            ph = "C:\\path\\to\\my_configs.txt" if sys.platform == "win32" else "/home/user/my_configs.txt"
+            self.path_input.setPlaceholderText(ph)
         else:
             self.path_input.setPlaceholderText("https://...")
 
     def _browse_local_file(self):
+        filt = (
+            "Text and Config Files (*.txt *.yaml *.yml *.json *.sub *.conf);;All Files (*.*)"
+            if sys.platform == "win32"
+            else "Text and Config Files (*.txt *.yaml *.yml *.json *.sub *.conf);;All Files (*)"
+        )
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select Configuration File",
             "",
-            "Text and Config Files (*.txt *.yaml *.yml *.json *.sub *.conf);;All Files (*)",
+            filt,
         )
         if file_path:
             self.path_input.setText(file_path)

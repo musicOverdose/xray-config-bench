@@ -37,7 +37,10 @@ class SourceManager:
         error_msg: Optional[str] = None
 
         try:
-            if source_type == "local_file" or os.path.exists(url_or_path):
+            is_local = (source_type == "local_file") or (
+                not url_or_path.startswith(("http://", "https://")) and os.path.exists(url_or_path)
+            )
+            if is_local:
                 file_path = Path(url_or_path)
                 if not file_path.is_file():
                     raise FileNotFoundError(f"Local file does not exist: {url_or_path}")

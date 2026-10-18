@@ -26,7 +26,9 @@ IGNORED_EXTENSIONS = {
 
 def is_github_repo_url(url: str) -> bool:
     """Check if URL points to a GitHub repository page rather than a raw file."""
-    u = url.lower()
+    u = url.strip().lower()
+    if not (u.startswith("http://") or u.startswith("https://")):
+        return False
     return "github.com/" in u and "raw.githubusercontent.com" not in u and not u.endswith(".txt")
 
 
