@@ -123,6 +123,10 @@ update-desktop-database ~/.local/share/applications/
 
 You can add and manage multiple configuration feeds directly from the GUI without writing code:
 
+### 1. Instant Setup (Recommended Sources)
+In the **Sources** tab, click **"Load Recommended"**. This immediately populates vetted, active community sources covering VLESS Reality, Trojan, VMess, and Shadowsocks.
+
+### 2. Adding Custom Sources
 1. Click on the **Sources** tab.
 2. Click **"+ Add Source"**.
 3. Choose the source type:
@@ -132,6 +136,20 @@ You can add and manage multiple configuration feeds directly from the GUI withou
    - **Local File**: Click "Browse..." to select any text file on your local machine.
 4. Enter an optional display name and click **OK**.
 5. Click **"Refresh Selected"** or **"Refresh All Enabled"**. Discovered configurations are automatically validated, deduplicated, and displayed in the Results tab.
+
+### Popular Community Sources
+
+| Source Name | Type | URL |
+| :--- | :--- | :--- |
+| **Barry-Far All Protocols** | Subscription | `https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Sub1.txt` |
+| **Barry-Far VLESS Reality** | Subscription | `https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/vless.txt` |
+| **Barry-Far Trojan** | Subscription | `https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/trojan.txt` |
+| **Barry-Far VMess** | Subscription | `https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/vmess.txt` |
+| **FreeFQ Community Nodes** | Subscription | `https://raw.githubusercontent.com/freefq/free/master/v2` |
+| **Pawdroid Free Servers** | Subscription | `https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub` |
+| **Yebekhe Telegram Collector** | Subscription | `https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix` |
+| **Mahdi0024 ProxyCollector** | Subscription | `https://raw.githubusercontent.com/Mahdi0024/ProxyCollector/master/sub/proxies.txt` |
+| **FreeFQ Repository** | GitHub Repo | `https://github.com/freefq/free` |
 
 ---
 

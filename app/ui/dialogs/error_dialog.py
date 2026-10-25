@@ -50,6 +50,7 @@ class ErrorDialog(QDialog):
         self.tb_box = QTextEdit()
         self.tb_box.setReadOnly(True)
         self.tb_box.setPlainText(self.error_text)
+        self.tb_box.setMinimumHeight(150)
         self.tb_box.setStyleSheet(
             """
             QTextEdit {

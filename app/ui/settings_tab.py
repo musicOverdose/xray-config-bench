@@ -8,12 +8,14 @@ from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
+    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QTextEdit,
     QVBoxLayout,
@@ -40,41 +42,55 @@ class SettingsTab(QWidget):
         self.load_settings()
 
     def _init_ui(self):
-        main_layout = QVBoxLayout(self)
+        root_layout = QVBoxLayout(self)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+
+        container = QWidget()
+        main_layout = QVBoxLayout(container)
         main_layout.setSpacing(14)
         main_layout.setContentsMargins(16, 16, 16, 16)
 
         # 1. Backend Xray Core Group
         backend_group = QGroupBox("Xray Core Backend")
         backend_layout = QVBoxLayout(backend_group)
+        backend_layout.setSpacing(10)
 
-        path_layout = QHBoxLayout()
         self.xray_path_input = QLineEdit()
+        self.xray_path_input.setMinimumWidth(220)
         placeholder = (
             "C:\\path\\to\\xray.exe or %LOCALAPPDATA%\\xray-config-bench\\bin\\xray.exe"
             if sys.platform == "win32"
             else "/usr/local/bin/xray or ~/.config/xray-config-bench/bin/xray"
         )
         self.xray_path_input.setPlaceholderText(placeholder)
-        path_layout.addWidget(self.xray_path_input)
+        backend_layout.addWidget(self.xray_path_input)
+
+        path_btn_layout = QHBoxLayout()
+        path_btn_layout.setSpacing(8)
 
         browse_btn = QPushButton("Browse...")
         browse_btn.clicked.connect(self._browse_xray)
-        path_layout.addWidget(browse_btn)
+        path_btn_layout.addWidget(browse_btn)
 
         detect_btn = QPushButton("Auto-Detect")
         detect_btn.clicked.connect(self._auto_detect_xray)
-        path_layout.addWidget(detect_btn)
+        path_btn_layout.addWidget(detect_btn)
 
         self.download_btn = QPushButton("Download Official Xray")
         self.download_btn.setObjectName("primaryBtn")
         self.download_btn.clicked.connect(self.download_xray_requested.emit)
-        path_layout.addWidget(self.download_btn)
+        path_btn_layout.addWidget(self.download_btn)
 
-        backend_layout.addLayout(path_layout)
+        path_btn_layout.addStretch()
+        backend_layout.addLayout(path_btn_layout)
 
         self.version_lbl = QLabel("Status: Checking backend...")
-        self.version_lbl.setStyleSheet("color: #7aa2f7; font-weight: bold;")
+        self.version_lbl.setStyleSheet("color: #7aa2f7; font-weight: bold; margin-top: 2px;")
         backend_layout.addWidget(self.version_lbl)
 
         main_layout.addWidget(backend_group)
@@ -84,11 +100,13 @@ class SettingsTab(QWidget):
         net_form = QFormLayout(net_group)
 
         self.endpoints_edit = QTextEdit()
-        self.endpoints_edit.setMaximumHeight(70)
+        self.endpoints_edit.setMinimumHeight(75)
+        self.endpoints_edit.setMaximumHeight(130)
         self.endpoints_edit.setPlaceholderText("https://cp.cloudflare.com/generate_204\nhttps://www.google.com/generate_204")
         net_form.addRow("Latency Probes (one per line):", self.endpoints_edit)
 
         self.download_url_input = QLineEdit()
+        self.download_url_input.setMinimumWidth(220)
         self.download_url_input.setPlaceholderText("https://speed.cloudflare.com/__down?bytes=2097152")
         net_form.addRow("Speed Test URL:", self.download_url_input)
 
@@ -170,8 +188,9 @@ class SettingsTab(QWidget):
         github_form = QFormLayout(github_group)
 
         self.github_token_input = QLineEdit()
+        self.github_token_input.setMinimumWidth(220)
         self.github_token_input.setEchoMode(QLineEdit.Password)
-        self.github_token_input.setPlaceholderText("ghp_... (Saved only locally in ~/.config, never committed)")
+        self.github_token_input.setPlaceholderText("ghp_... (Saved only locally in settings DB, never committed)")
         github_form.addRow("Personal Access Token:", self.github_token_input)
 
         main_layout.addWidget(github_group)
@@ -184,6 +203,9 @@ class SettingsTab(QWidget):
         self.save_btn.clicked.connect(self.save_settings)
         save_layout.addWidget(self.save_btn)
         main_layout.addLayout(save_layout)
+
+        scroll.setWidget(container)
+        root_layout.addWidget(scroll)
 
     def load_settings(self):
         """Load settings from database and populate form fields."""

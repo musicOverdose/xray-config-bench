@@ -54,3 +54,17 @@ def test_duplicate_detection(temp_db):
     assert is_new_1 is True
     assert is_new_2 is False
     assert temp_db.get_configs_count() == 1
+
+
+def test_populate_recommended_sources(temp_db):
+    from app.source_manager import populate_recommended_sources, RECOMMENDED_SOURCES
+
+    # First population
+    added = populate_recommended_sources(temp_db)
+    assert added == len(RECOMMENDED_SOURCES)
+    assert len(temp_db.get_sources()) == len(RECOMMENDED_SOURCES)
+
+    # Second population should detect all as existing and add 0
+    added_second = populate_recommended_sources(temp_db)
+    assert added_second == 0
+

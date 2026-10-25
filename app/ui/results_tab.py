@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -60,6 +61,8 @@ class ResultsTab(QWidget):
         filter_layout.addWidget(QLabel("Search:"))
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Filter name, server, or source...")
+        self.search_input.setMinimumWidth(160)
+        self.search_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.search_input.textChanged.connect(self.reload_results)
         filter_layout.addWidget(self.search_input)
 

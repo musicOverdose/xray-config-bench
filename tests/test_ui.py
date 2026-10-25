@@ -43,3 +43,38 @@ def test_main_window_initialization(qtbot, tmp_path):
     assert "Hello from GUI test" in log_text
     assert "ghp_" not in log_text
     assert "[REDACTED-TOKEN]" in log_text
+
+
+def test_small_window_resizing_and_settings_scroll(qtbot, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    monkeypatch.setattr(QMessageBox, "information", lambda *args, **kwargs: QMessageBox.Ok)
+
+    db_path = tmp_path / "gui_small_test.db"
+    db = Database(str(db_path))
+
+    window = MainWindow(db)
+    qtbot.addWidget(window)
+    window.show()
+
+    # Resize to small window size
+    window.resize(780, 480)
+
+    # Switch to Settings tab
+    window.content_stack.setCurrentIndex(3)
+    settings = window.settings_tab
+
+    # Text box and inputs should have valid dimensions and not be squished to 0
+    assert settings.xray_path_input.minimumWidth() >= 200
+    assert settings.endpoints_edit.minimumHeight() >= 70
+
+    # Switch to Results tab
+    window.content_stack.setCurrentIndex(2)
+    assert window.results_tab.search_input.minimumWidth() >= 160
+
+    # Switch to Sources tab and trigger Load Recommended
+    window.content_stack.setCurrentIndex(1)
+    sources_tab = window.sources_tab
+    sources_tab.recommended_btn.click()
+    assert sources_tab.table.rowCount() > 0
+

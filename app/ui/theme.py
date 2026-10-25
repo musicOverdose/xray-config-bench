@@ -116,19 +116,58 @@ QPushButton#dangerBtn:hover {
     background-color: #ff9eaf;
 }
 
-/* LineEdits and Inputs */
-QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+/* LineEdits and Single-Line Inputs */
+QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
     background-color: #1f2335;
     color: #c0caf5;
     border: 1px solid #414868;
     border-radius: 6px;
     padding: 6px 10px;
-    min-height: 18px;
+    min-height: 24px;
+    font-size: 9.5pt;
 }
 
-QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus {
+/* Multi-Line Text Inputs */
+QTextEdit, QPlainTextEdit {
+    background-color: #1f2335;
+    color: #c0caf5;
+    border: 1px solid #414868;
+    border-radius: 6px;
+    padding: 8px 10px;
+    min-height: 65px;
+    font-size: 9.5pt;
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus {
     border: 1px solid #7aa2f7;
     background-color: #24283b;
+}
+
+/* Scroll Areas and Scrollbars */
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background-color: #16161e;
+    width: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #3b4261;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #7aa2f7;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
 }
 
 /* Tables */

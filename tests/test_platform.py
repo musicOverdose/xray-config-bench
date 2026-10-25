@@ -129,3 +129,39 @@ def test_proxy_runner_windows_creationflags(mock_wait, mock_popen, tmp_path, mon
         assert "creationflags" in kwargs
 
     mock_proc.terminate.assert_called_once()
+
+
+def test_download_official_xray_extraction(tmp_path, monkeypatch):
+    """Verify that download_official_xray extracts binary and assets from zip properly without NameError."""
+    import io
+    import zipfile
+    from app.core_manager import download_official_xray
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    monkeypatch.setattr("app.core_manager.get_bin_dir", lambda: bin_dir)
+
+    # Create dummy zip with xray binary and geoip.dat
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zf:
+        zf.writestr("xray", b"fake-xray-binary-content")
+        zf.writestr("geoip.dat", b"fake-geoip-data")
+    zip_bytes = zip_buffer.getvalue()
+
+    # Mock requests.get
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.headers = {"content-length": str(len(zip_bytes))}
+    mock_resp.iter_content.return_value = [zip_bytes]
+    mock_resp.text = ""
+    mock_resp.__enter__.return_value = mock_resp
+    mock_resp.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_resp):
+        installed_path = download_official_xray(system="linux", machine="x86_64")
+
+    assert installed_path.exists()
+    assert installed_path.read_bytes() == b"fake-xray-binary-content"
+    assert (bin_dir / "geoip.dat").exists()
+    assert (bin_dir / "geoip.dat").read_bytes() == b"fake-geoip-data"
+

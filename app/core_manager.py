@@ -196,8 +196,9 @@ def download_official_xray(
     if progress_callback:
         progress_callback(90, 100, f"Extracting {bin_name}...")
 
-        # Extract binary and supporting asset files (geoip.dat, geosite.dat)
-        extracted_bin = False
+    # Extract binary and supporting asset files (geoip.dat, geosite.dat)
+    extracted_bin = False
+    with zipfile.ZipFile(archive_path, "r") as zf:
         for member in zf.namelist():
             member_name = Path(member).name
             member_lower = member_name.lower()
@@ -209,8 +210,8 @@ def download_official_xray(
                 with zf.open(member) as source, open(managed_dir / member_name, "wb") as target:
                     shutil.copyfileobj(source, target)
 
-        if not extracted_bin:
-            raise ValueError(f"Invalid Xray release archive: missing '{bin_name}'")
+    if not extracted_bin:
+        raise ValueError(f"Invalid Xray release archive: missing '{bin_name}'")
 
     # 4. Set executable permissions on non-Windows platforms
     if sys.platform != "win32":

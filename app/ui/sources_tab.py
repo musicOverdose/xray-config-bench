@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..database import Database
+from ..source_manager import populate_recommended_sources
 from .dialogs.source_dialog import SourceDialog
 
 
@@ -42,6 +43,10 @@ class SourcesTab(QWidget):
         self.add_btn.setObjectName("primaryBtn")
         self.add_btn.clicked.connect(self._add_source)
         btn_layout.addWidget(self.add_btn)
+
+        self.recommended_btn = QPushButton("Load Recommended")
+        self.recommended_btn.clicked.connect(self._load_recommended)
+        btn_layout.addWidget(self.recommended_btn)
 
         self.edit_btn = QPushButton("Edit")
         self.edit_btn.clicked.connect(self._edit_selected)
@@ -217,3 +222,22 @@ class SourcesTab(QWidget):
         source_id = self._get_selected_source_id()
         if source_id:
             self.source_refresh_requested.emit(source_id)
+
+    def _load_recommended(self):
+        added = populate_recommended_sources(self.db)
+        self.reload_sources()
+        self.sources_changed.emit()
+        if added > 0:
+            QMessageBox.information(
+                self,
+                "Recommended Sources Loaded",
+                f"Successfully added {added} recommended proxy sources!\n\n"
+                "Click 'Refresh All Enabled' to fetch configurations from them.",
+            )
+        else:
+            QMessageBox.information(
+                self,
+                "Sources Already Present",
+                "All recommended sources are already in your Sources list.",
+            )
+

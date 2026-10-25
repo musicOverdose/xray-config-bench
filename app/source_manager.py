@@ -126,3 +126,73 @@ class SourceManager:
                 errors.append(f"{src['name']}: {err}")
 
         return total_discovered, total_valid, errors
+
+
+RECOMMENDED_SOURCES = [
+    {
+        "name": "Barry-Far All Protocols",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Sub1.txt",
+    },
+    {
+        "name": "Barry-Far VLESS Reality & TLS",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/vless.txt",
+    },
+    {
+        "name": "Barry-Far Trojan",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/trojan.txt",
+    },
+    {
+        "name": "Barry-Far VMess",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/vmess.txt",
+    },
+    {
+        "name": "FreeFQ Community Multi-Protocol",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/freefq/free/master/v2",
+    },
+    {
+        "name": "Pawdroid Free Servers",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
+    },
+    {
+        "name": "Yebekhe Collector Mix",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/mix",
+    },
+    {
+        "name": "Mahdi0024 ProxyCollector",
+        "source_type": "subscription",
+        "url_or_path": "https://raw.githubusercontent.com/Mahdi0024/ProxyCollector/master/sub/proxies.txt",
+    },
+    {
+        "name": "FreeFQ GitHub Repository",
+        "source_type": "github_repo",
+        "url_or_path": "https://github.com/freefq/free",
+    },
+]
+
+
+def populate_recommended_sources(db: Database) -> int:
+    """Add recommended community sources to database if not already present. Returns count of added sources."""
+    import uuid
+
+    existing_urls = {s["url_or_path"].strip().lower() for s in db.get_sources()}
+    added = 0
+    for item in RECOMMENDED_SOURCES:
+        url = item["url_or_path"].strip()
+        if url.lower() not in existing_urls:
+            db.add_source(
+                source_id=str(uuid.uuid4()),
+                name=item["name"],
+                source_type=item["source_type"],
+                url_or_path=url,
+                enabled=True,
+            )
+            existing_urls.add(url.lower())
+            added += 1
+    return added

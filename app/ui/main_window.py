@@ -40,7 +40,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Xray Config Bench")
         self.resize(1140, 720)
-        self.setMinimumSize(880, 580)
+        self.setMinimumSize(780, 480)
         self.setStyleSheet(DARK_THEME_QSS)
 
         self._init_ui()

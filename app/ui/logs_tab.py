@@ -45,13 +45,14 @@ class LogsTab(QWidget):
         # Text Console
         self.log_console = QPlainTextEdit()
         self.log_console.setReadOnly(True)
+        self.log_console.setMinimumHeight(160)
         self.log_console.setStyleSheet(
             """
             QPlainTextEdit {
                 background-color: #16161e;
                 color: #9aa5ce;
                 font-family: 'Consolas', 'Courier New', 'Liberation Mono', monospace;
-                font-size: 12px;
+                font-size: 9.5pt;
                 border: 1px solid #292e42;
                 border-radius: 6px;
                 padding: 8px;

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QSizePolicy,
     QTextEdit,
     QVBoxLayout,
 )
@@ -71,7 +72,8 @@ class ConfigDetailsDialog(QDialog):
             err_box = QTextEdit()
             err_box.setReadOnly(True)
             err_box.setPlainText(redact_credentials(err_det))
-            err_box.setMaximumHeight(70)
+            err_box.setMinimumHeight(65)
+            err_box.setMaximumHeight(100)
             diag_form.addRow("Error Detail:", err_box)
 
         layout.addWidget(diag_group)
@@ -108,6 +110,8 @@ class ConfigDetailsDialog(QDialog):
         self.link_input = QLineEdit()
         self.link_input.setText(self.config.raw_link)
         self.link_input.setReadOnly(True)
+        self.link_input.setMinimumWidth(280)
+        self.link_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         link_row.addWidget(self.link_input)
 
         copy_btn = QPushButton("Copy Link")

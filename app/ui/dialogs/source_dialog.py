@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
 )
 
@@ -38,6 +39,7 @@ class SourceDialog(QDialog):
 
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g. Community Free Nodes")
+        self.name_input.setMinimumWidth(260)
         form.addRow("Display Name:", self.name_input)
 
         self.type_combo = QComboBox()
@@ -55,6 +57,8 @@ class SourceDialog(QDialog):
         path_layout = QHBoxLayout()
         self.path_input = QLineEdit()
         self.path_input.setPlaceholderText("https://... or /path/to/configs.txt")
+        self.path_input.setMinimumWidth(260)
+        self.path_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         path_layout.addWidget(self.path_input)
 
         self.browse_btn = QPushButton("Browse...")
